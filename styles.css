@@ -1,17 +1,17 @@
 :root {
-  --sky-top: #7fb2d9;
-  --sky-bottom: #fbe3ab;
-  --sun: #ffd976;
-  --grass-base: #7a9b4e;
-  --grass-dark: #587a3c;
-  --dot-1: #e8a33d; /* ochre */
-  --dot-2: #c1477a; /* magenta */
-  --dot-3: #4c8c6b; /* deep green */
-  --dot-4: #8e6fb0; /* violet */
-  --dot-5: #d64545; /* poppy */
-  --dot-6: #f2c14e; /* gold */
-  --ink: #3a2c1e;
-  --paper: #fbf6ec;
+  --sky-top: #0e1c3a;
+  --sky-bottom: #6f7fa3;
+  --moon: #f2f5fb;
+  --grass-base: #3f5a3f;
+  --grass-dark: #20301f;
+  --dot-1: #8a6f9e; /* mauve */
+  --dot-2: #5c6f9e; /* indigo */
+  --dot-3: #3c5f52; /* deep pine */
+  --dot-4: #6b5a8e; /* violet */
+  --dot-5: #7a4a5a; /* wine */
+  --dot-6: #8c8452; /* olive gold */
+  --ink: #f2f0e8;
+  --paper: #10182c;
 }
 
 * {
@@ -45,7 +45,7 @@ html, body {
   bottom: 1.9rem;
   font-family: "Cormorant Garamond", serif;
   color: var(--ink);
-  mix-blend-mode: multiply;
+  mix-blend-mode: screen;
   pointer-events: none;
   user-select: none;
 }

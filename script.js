@@ -1,5 +1,5 @@
 /* USAODATOV — hero scene
- * A sunny, pointillist meadow (nodding to Monet's late-summer fields) with
+ * A moonlit, pointillist meadow (nodding to Monet's late-summer fields) with
  * two children — a 10-year-old girl and her 7-year-old brother — running
  * in loose circles, chasing one another, then slowing to talk before
  * running off again. Everything is drawn as soft painterly daubs rather
@@ -12,7 +12,7 @@
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   const PALETTE = {
-    dot: ['#e8a33d', '#c1477a', '#4c8c6b', '#8e6fb0', '#d64545', '#f2c14e', '#6fa8c9', '#b5c93a'],
+    dot: ['#8a6f9e', '#5c6f9e', '#3c5f52', '#6b5a8e', '#7a4a5a', '#8c8452', '#4a7a92', '#5c7a4a'],
   };
 
   let W = 0, H = 0, DPR = 1;
@@ -71,30 +71,53 @@
   function paintBackground() {
     // sky
     const sky = bgCtx.createLinearGradient(0, 0, 0, horizonY * 1.05);
-    sky.addColorStop(0, '#6fa4d1');
-    sky.addColorStop(0.55, '#a7c9df');
-    sky.addColorStop(1, '#fbe3ab');
+    sky.addColorStop(0, '#0e1c3a');
+    sky.addColorStop(0.55, '#28406b');
+    sky.addColorStop(1, '#6f7fa3');
     bgCtx.fillStyle = sky;
     bgCtx.fillRect(0, 0, W, horizonY + 2);
 
-    // sun glow
-    const sunX = W * 0.78, sunY = horizonY * 0.32;
-    const glow = bgCtx.createRadialGradient(sunX, sunY, 4, sunX, sunY, W * 0.32);
-    glow.addColorStop(0, 'rgba(255, 235, 180, 0.95)');
-    glow.addColorStop(0.35, 'rgba(255, 217, 118, 0.35)');
-    glow.addColorStop(1, 'rgba(255, 217, 118, 0)');
+    // stars
+    for (let i = 0; i < W / 9; i++) {
+      const sx = rand(0, W);
+      const sy = rand(0, horizonY * 0.85);
+      bgCtx.fillStyle = `rgba(255, 255, 255, ${rand(0.2, 0.85)})`;
+      bgCtx.beginPath();
+      bgCtx.arc(sx, sy, rand(0.4, 1.3), 0, Math.PI * 2);
+      bgCtx.fill();
+    }
+
+    // moon glow
+    const moonX = W * 0.78, moonY = horizonY * 0.32;
+    const glow = bgCtx.createRadialGradient(moonX, moonY, 4, moonX, moonY, W * 0.28);
+    glow.addColorStop(0, 'rgba(226, 236, 255, 0.55)');
+    glow.addColorStop(0.35, 'rgba(196, 214, 255, 0.22)');
+    glow.addColorStop(1, 'rgba(196, 214, 255, 0)');
     bgCtx.fillStyle = glow;
     bgCtx.fillRect(0, 0, W, horizonY + 2);
+
+    // moon disc
+    const moonR = W * 0.02;
+    bgCtx.save();
     bgCtx.beginPath();
-    bgCtx.fillStyle = '#fff6d9';
-    bgCtx.arc(sunX, sunY, W * 0.018, 0, Math.PI * 2);
+    bgCtx.fillStyle = '#f2f5fb';
+    bgCtx.arc(moonX, moonY, moonR, 0, Math.PI * 2);
     bgCtx.fill();
+    // soft craters
+    bgCtx.clip();
+    bgCtx.fillStyle = 'rgba(190, 200, 220, 0.35)';
+    bgCtx.beginPath();
+    bgCtx.arc(moonX - moonR * 0.35, moonY - moonR * 0.25, moonR * 0.28, 0, Math.PI * 2);
+    bgCtx.arc(moonX + moonR * 0.3, moonY + moonR * 0.2, moonR * 0.2, 0, Math.PI * 2);
+    bgCtx.arc(moonX + moonR * 0.05, moonY - moonR * 0.45, moonR * 0.14, 0, Math.PI * 2);
+    bgCtx.fill();
+    bgCtx.restore();
 
     // distant tree/hedge line, loose daubs
     for (let i = 0; i < W / 14; i++) {
       const x = i * 14 + rand(-6, 6);
       const h = rand(8, 22);
-      bgCtx.fillStyle = `rgba(70, 96, 58, ${rand(0.25, 0.5)})`;
+      bgCtx.fillStyle = `rgba(30, 42, 36, ${rand(0.35, 0.6)})`;
       bgCtx.beginPath();
       bgCtx.ellipse(x, horizonY - h * 0.3, rand(9, 16), h, 0, 0, Math.PI * 2);
       bgCtx.fill();
@@ -102,8 +125,8 @@
 
     // base grass gradient
     const grass = bgCtx.createLinearGradient(0, horizonY, 0, H);
-    grass.addColorStop(0, '#8aab57');
-    grass.addColorStop(1, '#5c7d3c');
+    grass.addColorStop(0, '#3f5a3f');
+    grass.addColorStop(1, '#20301f');
     bgCtx.fillStyle = grass;
     bgCtx.fillRect(0, horizonY, W, H - horizonY);
 
