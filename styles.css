@@ -1,0 +1,77 @@
+:root {
+  --sky-top: #7fb2d9;
+  --sky-bottom: #fbe3ab;
+  --sun: #ffd976;
+  --grass-base: #7a9b4e;
+  --grass-dark: #587a3c;
+  --dot-1: #e8a33d; /* ochre */
+  --dot-2: #c1477a; /* magenta */
+  --dot-3: #4c8c6b; /* deep green */
+  --dot-4: #8e6fb0; /* violet */
+  --dot-5: #d64545; /* poppy */
+  --dot-6: #f2c14e; /* gold */
+  --ink: #3a2c1e;
+  --paper: #fbf6ec;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--paper);
+}
+
+#scene {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #scene {
+    /* Animation is paused via JS when this is set; canvas still renders a static frame. */
+  }
+}
+
+.mark {
+  position: fixed;
+  left: 2rem;
+  bottom: 1.9rem;
+  font-family: "Cormorant Garamond", serif;
+  color: var(--ink);
+  mix-blend-mode: multiply;
+  pointer-events: none;
+  user-select: none;
+}
+
+.mark h1 {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  line-height: 1.1;
+}
+
+.mark p {
+  margin: 0.15rem 0 0;
+  font-size: 0.95rem;
+  font-style: italic;
+  font-weight: 400;
+  opacity: 0.75;
+}
+
+@media (max-width: 640px) {
+  .mark {
+    left: 1.25rem;
+    bottom: 1.25rem;
+  }
+  .mark h1 {
+    font-size: 1.1rem;
+  }
+}
