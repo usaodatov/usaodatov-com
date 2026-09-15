@@ -75,3 +75,95 @@ html, body {
     font-size: 1.1rem;
   }
 }
+
+/* Speech bubbles for Joshua and Maria — positioned by JS via left/top on
+   the anchor; the tail direction (data-tail) offsets the bubble from that
+   point so the tail always touches the character. */
+.speech-bubble-anchor {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 20;
+  pointer-events: none;
+}
+
+.speech-bubble-anchor[data-tail="top"] { transform: translate(-50%, calc(-100% - 14px)); }
+.speech-bubble-anchor[data-tail="bottom"] { transform: translate(-50%, 14px); }
+.speech-bubble-anchor[data-tail="left"] { transform: translate(14px, -50%); }
+.speech-bubble-anchor[data-tail="right"] { transform: translate(calc(-100% - 14px), -50%); }
+
+.speech-bubble {
+  position: relative;
+  max-width: clamp(140px, 38vw, 210px);
+  padding: clamp(6px, 1.6vw, 10px) clamp(10px, 2.4vw, 14px);
+  border-radius: 16px;
+  background: rgba(255, 252, 244, 0.96);
+  color: #2a2418;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
+  font-family: "Cormorant Garamond", serif;
+  font-weight: 500;
+  font-size: clamp(0.78rem, 1.6vw, 1rem);
+  line-height: 1.25;
+  text-align: center;
+  white-space: normal;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: opacity 220ms ease, transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.speech-bubble.is-visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.speech-bubble::after {
+  content: "";
+  position: absolute;
+  width: 0;
+  height: 0;
+  border: 7px solid transparent;
+}
+
+[data-tail="top"] .speech-bubble::after {
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-top-color: rgba(255, 252, 244, 0.96);
+}
+
+[data-tail="bottom"] .speech-bubble::after {
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-bottom-color: rgba(255, 252, 244, 0.96);
+}
+
+[data-tail="left"] .speech-bubble::after {
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  border-right-color: rgba(255, 252, 244, 0.96);
+}
+
+[data-tail="right"] .speech-bubble::after {
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  border-left-color: rgba(255, 252, 244, 0.96);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .speech-bubble {
+    transition: opacity 200ms ease;
+    transform: scale(1) !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .speech-bubble {
+    font-size: clamp(0.7rem, 3.2vw, 0.85rem);
+    padding: 6px 10px;
+    max-width: 150px;
+  }
+}
