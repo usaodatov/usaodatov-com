@@ -76,6 +76,36 @@ html, body {
   }
 }
 
+.city-times {
+  position: fixed;
+  left: 2rem;
+  top: 1.5rem;
+  font-family: "Caveat", "Cormorant Garamond", cursive;
+  color: var(--ink);
+  mix-blend-mode: screen;
+  pointer-events: none;
+  user-select: none;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.4);
+}
+
+.city-times p {
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: 0.01em;
+}
+
+@media (max-width: 640px) {
+  .city-times {
+    left: 1.25rem;
+    top: 1.1rem;
+  }
+  .city-times p {
+    font-size: 1.3rem;
+  }
+}
+
 /* Speech bubbles for Joshua and Maria — positioned by JS via left/top on
    the anchor; the tail direction (data-tail) offsets the bubble from that
    point so the tail always touches the character. */

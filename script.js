@@ -21,6 +21,7 @@
   let horizonY = 0;
   let meadow = []; // pointillist dots
   let meetSpot = { x: 0, y: 0 };
+  let camp = {}; // campsite layout, lower-left family vignette
 
   // Joshua (boy) / Maria (girl) head-anchor points in page coordinates,
   // refreshed every frame in render() — used to position speech bubbles.
@@ -46,9 +47,31 @@
 
     horizonY = H * 0.38;
     meetSpot = { x: W * 0.54, y: H * 0.66 };
+    computeCampLayout();
 
     buildMeadow();
     paintBackground();
+  }
+
+  // Right-side campsite vignette: tent, fire pit, chairs, play area — all
+  // anchored off one base point whose ground line sits ~80% down the frame
+  // (base of the cluster in the bottom 20% band). Mirrored left-right from
+  // its original bottom-left layout (tent/fire/chair offsets and chair
+  // facings all flip sign) so the internal composition reads the same way
+  // reflected against the right edge instead of the left.
+  function computeCampLayout() {
+    const s = clamp(W / 1300, 0.75, 1.5);
+    const baseX = W * 0.86;
+    const baseY = H * 0.80;
+    camp.scale = s;
+    camp.clearingX = baseX - 5 * s;
+    camp.clearingY = baseY + 6 * s;
+    camp.tent = { x: baseX + 55 * s, y: baseY + 2 * s };
+    camp.fire = { x: baseX - 55 * s, y: baseY + 12 * s };
+    camp.chairFather = { x: camp.fire.x + 42 * s, y: camp.fire.y + 2 * s, facing: -1 };
+    camp.chairMother = { x: camp.fire.x - 42 * s, y: camp.fire.y + 2 * s, facing: 1 };
+    camp.kidsCenter = { x: baseX + 20 * s, y: baseY + 18 * s };
+    camp.kidsRadius = 18 * s;
   }
 
   function rand(a, b) { return a + Math.random() * (b - a); }
@@ -151,6 +174,138 @@
       bgCtx.restore();
     }
     bgCtx.globalAlpha = 1;
+
+    paintCampsiteStatic();
+  }
+
+  // --- campsite (static parts baked into bg; fire/figures animate per frame) --
+
+  function paintCampsiteStatic() {
+    paintClearing(camp.clearingX, camp.clearingY, camp.scale);
+    paintTentFabric(camp.tent.x, camp.tent.y, camp.scale);
+    paintChair(camp.chairFather.x, camp.chairFather.y, camp.scale, camp.chairFather.facing);
+    paintChair(camp.chairMother.x, camp.chairMother.y, camp.scale, camp.chairMother.facing);
+    paintFireLogs(camp.fire.x, camp.fire.y, camp.scale);
+    paintStoneRing(camp.fire.x, camp.fire.y + 2 * camp.scale, camp.scale);
+  }
+
+  function paintClearing(x, y, scale) {
+    bgCtx.save();
+    const w = 170 * scale, h = 46 * scale;
+    const grad = bgCtx.createRadialGradient(x, y, 4, x, y, w);
+    grad.addColorStop(0, 'rgba(58, 48, 34, 0.35)');
+    grad.addColorStop(1, 'rgba(58, 48, 34, 0)');
+    bgCtx.fillStyle = grad;
+    bgCtx.beginPath();
+    bgCtx.ellipse(x, y, w, h, 0, 0, Math.PI * 2);
+    bgCtx.fill();
+    bgCtx.restore();
+  }
+
+  function paintTentFabric(x, y, scale) {
+    bgCtx.save();
+    bgCtx.translate(x, y);
+    bgCtx.scale(scale, scale);
+    const width = 46, height = 34;
+
+    bgCtx.fillStyle = 'rgba(232, 226, 208, 0.95)';
+    bgCtx.beginPath();
+    bgCtx.moveTo(-width * 0.55, 0);
+    bgCtx.quadraticCurveTo(-width * 0.5, -height * 0.95, 0, -height);
+    bgCtx.quadraticCurveTo(width * 0.5, -height * 0.95, width * 0.55, 0);
+    bgCtx.closePath();
+    bgCtx.fill();
+
+    // shaded flank for volume
+    bgCtx.fillStyle = 'rgba(150, 140, 116, 0.4)';
+    bgCtx.beginPath();
+    bgCtx.moveTo(0, -height);
+    bgCtx.quadraticCurveTo(width * 0.5, -height * 0.95, width * 0.55, 0);
+    bgCtx.lineTo(width * 0.12, 0);
+    bgCtx.closePath();
+    bgCtx.fill();
+
+    bgCtx.strokeStyle = 'rgba(110, 100, 80, 0.4)';
+    bgCtx.lineWidth = 1.2;
+    bgCtx.beginPath();
+    bgCtx.moveTo(0, -height);
+    bgCtx.lineTo(0, 0);
+    bgCtx.stroke();
+
+    bgCtx.strokeStyle = 'rgba(50, 45, 35, 0.35)';
+    bgCtx.lineWidth = 1;
+    bgCtx.beginPath();
+    bgCtx.moveTo(-width * 0.55, 0); bgCtx.lineTo(-width * 0.85, 7);
+    bgCtx.moveTo(width * 0.55, 0); bgCtx.lineTo(width * 0.85, 7);
+    bgCtx.stroke();
+
+    // loose painterly texture daubs on the canvas fabric
+    for (let i = 0; i < 10; i++) {
+      bgCtx.fillStyle = `rgba(255, 255, 255, ${rand(0.03, 0.1)})`;
+      bgCtx.beginPath();
+      bgCtx.ellipse(rand(-width * 0.4, width * 0.4), rand(-height * 0.9, -4), rand(3, 7), rand(1.5, 3), rand(-0.4, 0.4), 0, Math.PI * 2);
+      bgCtx.fill();
+    }
+    bgCtx.restore();
+  }
+
+  function paintChair(x, y, scale, facing) {
+    bgCtx.save();
+    bgCtx.translate(x, y);
+    bgCtx.scale(scale * facing, scale);
+    bgCtx.strokeStyle = 'rgba(70, 52, 36, 0.85)';
+    bgCtx.lineWidth = 2.4;
+    bgCtx.lineCap = 'round';
+    bgCtx.beginPath();
+    bgCtx.moveTo(-9, 6); bgCtx.lineTo(6, -20);
+    bgCtx.moveTo(9, 6); bgCtx.lineTo(-6, -20);
+    bgCtx.stroke();
+    bgCtx.fillStyle = 'rgba(96, 66, 46, 0.55)';
+    bgCtx.beginPath();
+    bgCtx.moveTo(-8, 4);
+    bgCtx.lineTo(8, 4);
+    bgCtx.lineTo(6, -22);
+    bgCtx.lineTo(-6, -22);
+    bgCtx.closePath();
+    bgCtx.fill();
+    bgCtx.restore();
+  }
+
+  function paintFireLogs(x, y, scale) {
+    bgCtx.save();
+    bgCtx.translate(x, y);
+    bgCtx.scale(scale, scale);
+    bgCtx.strokeStyle = '#3b2a1e';
+    bgCtx.lineWidth = 3;
+    bgCtx.lineCap = 'round';
+    bgCtx.beginPath();
+    bgCtx.moveTo(-10, 3); bgCtx.lineTo(9, -5);
+    bgCtx.moveTo(-9, -5); bgCtx.lineTo(10, 3);
+    bgCtx.stroke();
+    bgCtx.fillStyle = 'rgba(60, 52, 46, 0.5)';
+    bgCtx.beginPath();
+    bgCtx.ellipse(0, 2, 13, 5, 0, 0, Math.PI * 2);
+    bgCtx.fill();
+    bgCtx.restore();
+  }
+
+  function paintStoneRing(x, y, scale) {
+    const r = 20 * scale;
+    const stoneCount = 9;
+    for (let i = 0; i < stoneCount; i++) {
+      const a = (i / stoneCount) * Math.PI * 2 + rand(-0.06, 0.06);
+      const sx = x + Math.cos(a) * r;
+      const sy = y + Math.sin(a) * r * 0.45;
+      const size = rand(3.4, 5.2) * scale;
+      bgCtx.fillStyle = `rgba(${100 + Math.floor(rand(-10, 15))}, ${96 + Math.floor(rand(-10, 15))}, ${92 + Math.floor(rand(-10, 15))}, 0.85)`;
+      bgCtx.beginPath();
+      bgCtx.ellipse(sx, sy, size, size * 0.72, a, 0, Math.PI * 2);
+      bgCtx.fill();
+      bgCtx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+      bgCtx.beginPath();
+      bgCtx.ellipse(sx - size * 0.2, sy - size * 0.2, size * 0.4, size * 0.28, a, 0, Math.PI * 2);
+      bgCtx.fill();
+    }
   }
 
   // --- figures --------------------------------------------------------
@@ -235,6 +390,232 @@
     }
   }
 
+  // Draws one seated parent, reclined in a camping chair. facing: -1/1, so
+  // the pair (facing +1 and -1) reads as sitting across the fire from each
+  // other. gestureT drives the idle "mid-conversation" sway — head turning
+  // toward the other, hands gesturing gently — independent of any walk cycle.
+  function drawParent(x, y, scale, facing, gestureT, palette, isMother) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(scale * facing, scale);
+
+    const headTurn = Math.sin(gestureT * 0.55) * 0.16 + Math.sin(gestureT * 1.3) * 0.04;
+    const armGesture = Math.sin(gestureT * 0.9) * 6;
+    const armGesture2 = Math.sin(gestureT * 0.9 + 1.1) * 5;
+    const breathe = Math.sin(gestureT * 0.7) * 0.6;
+
+    const hipY = -8;
+    const shoulderY = hipY - 15 + breathe * 0.2;
+    const headY = shoulderY - 9;
+
+    // legs, extended forward onto the chair's footrest
+    ctx.strokeStyle = palette.bottom;
+    ctx.lineWidth = 4;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(0, hipY); ctx.lineTo(15, hipY + 9);
+    ctx.moveTo(0, hipY); ctx.lineTo(17, hipY + 8);
+    ctx.stroke();
+
+    // torso, reclined back against the chair
+    ctx.save();
+    ctx.translate(0, (hipY + shoulderY) / 2);
+    ctx.rotate(-0.25);
+    ctx.fillStyle = palette.top;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 7.5, (hipY - shoulderY) / 2 + 1.5, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    // arms, gesturing gently as though mid-conversation
+    drawLimb(0, shoulderY, armGesture, shoulderY + 10, palette.skin, 3);
+    drawLimb(0, shoulderY, armGesture2 * 0.6, shoulderY + 9, palette.skin, 2.6);
+
+    // head, turning toward the other parent and back
+    ctx.save();
+    ctx.translate(0, headY);
+    ctx.rotate(headTurn);
+    ctx.fillStyle = palette.skin;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 6, 6.4, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = palette.hair;
+    ctx.beginPath();
+    if (isMother) {
+      ctx.ellipse(0, -1.4, 6.6, 5, 0, Math.PI, Math.PI * 2);
+      ctx.ellipse(-5.5, 2, 2.2, 4, -0.3, 0, Math.PI * 2);
+    } else {
+      ctx.ellipse(0, -1.6, 6.2, 4.4, 0, Math.PI, Math.PI * 2);
+    }
+    ctx.fill();
+    ctx.restore();
+
+    ctx.restore();
+
+    function drawLimb(x1, y1, x2, y2, color, width) {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = width;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+    }
+  }
+
+  // --- campsite: per-frame animated parts (fire, flicker, figures) -------
+
+  function drawCampsiteDynamic(t) {
+    drawCampAmbientGlow(t);
+    drawTentFlicker(camp.tent.x, camp.tent.y, camp.scale, t);
+    drawChairOccupant(camp.chairFather, t, false);
+    drawChairOccupant(camp.chairMother, t + 3.3, true);
+    drawCampfireDynamic(camp.fire.x, camp.fire.y - 2 * camp.scale, camp.scale, t);
+    drawCampKids(t);
+  }
+
+  function drawCampAmbientGlow(t) {
+    const pulse = Math.sin(t * 3.1) * 0.5 + 0.5;
+    const r = 130 * camp.scale;
+    const g = ctx.createRadialGradient(camp.fire.x, camp.fire.y, 10, camp.fire.x, camp.fire.y, r);
+    g.addColorStop(0, `rgba(255, 150, 70, ${0.14 + pulse * 0.05})`);
+    g.addColorStop(1, 'rgba(255, 150, 70, 0)');
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(camp.fire.x, camp.fire.y, r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawTentFlicker(x, y, scale, t) {
+    const flick = Math.sin(t * 5) * 0.5 + Math.sin(t * 11) * 0.3 + 0.5;
+    const height = 34;
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(scale, scale);
+    ctx.globalCompositeOperation = 'lighter';
+
+    const glowR = 34 + flick * 4;
+    const glow = ctx.createRadialGradient(0, -height * 0.5, 2, 0, -height * 0.5, glowR);
+    glow.addColorStop(0, `rgba(255, 195, 120, ${0.22 + flick * 0.1})`);
+    glow.addColorStop(1, 'rgba(255, 195, 120, 0)');
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(0, -height * 0.5, glowR, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = `rgba(255, 190, 110, ${0.45 + flick * 0.18})`;
+    ctx.beginPath();
+    ctx.moveTo(-4.6, 0);
+    ctx.lineTo(0, -height * 0.55);
+    ctx.lineTo(4.6, 0);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawChairOccupant(chair, gestureT, isMother) {
+    const palette = isMother
+      ? { skin: '#d2a888', hair: '#6b3f28', top: '#7a4a5a', bottom: '#5c3646' }
+      : { skin: '#caa07a', hair: '#4a3626', top: '#3f5540', bottom: '#33452f' };
+    drawParent(chair.x, chair.y - 4 * camp.scale, camp.scale, chair.facing, gestureT, palette, isMother);
+  }
+
+  function drawCampfireDynamic(x, y, scale, t) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(scale, scale);
+
+    const pulse = Math.sin(t * 6) * 0.5 + Math.sin(t * 2.3) * 0.5;
+    const glowR = 30 + pulse * 3;
+    const glow = ctx.createRadialGradient(0, -4, 2, 0, -4, glowR);
+    glow.addColorStop(0, `rgba(255, 140, 50, ${0.45 + pulse * 0.08})`);
+    glow.addColorStop(1, 'rgba(255, 120, 40, 0)');
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(0, -4, glowR, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    drawFlames(t);
+    drawEmbers(t);
+    ctx.restore();
+  }
+
+  function drawFlames(t) {
+    const flameLayers = [
+      { count: 3, hMin: 14, hMax: 22, wMin: 5, wMax: 8, c1: 'rgba(220, 60, 20, 0.95)', c2: 'rgba(255, 150, 40, 0.9)' },
+      { count: 2, hMin: 9, hMax: 14, wMin: 3.4, wMax: 5, c1: 'rgba(255, 170, 50, 0.95)', c2: 'rgba(255, 225, 130, 0.9)' },
+    ];
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    let seed = 0;
+    for (const layer of flameLayers) {
+      for (let i = 0; i < layer.count; i++) {
+        seed += 1;
+        const phase = seed * 2.1;
+        const sway = Math.sin(t * 6 + phase) * 2.2 + Math.sin(t * 13 + phase * 1.7) * 0.9;
+        const h = lerp(layer.hMin, layer.hMax, Math.sin(t * 8.5 + phase) * 0.5 + 0.5);
+        const w = lerp(layer.wMin, layer.wMax, Math.sin(t * 5.5 + phase * 1.3) * 0.5 + 0.5);
+        const baseX = (i - (layer.count - 1) / 2) * 4.5 + sway * 0.4;
+        const grad = ctx.createLinearGradient(baseX, 0, baseX, -h);
+        grad.addColorStop(0, layer.c1);
+        grad.addColorStop(1, layer.c2);
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.moveTo(baseX - w * 0.5, 0);
+        ctx.quadraticCurveTo(baseX - w * 0.3 + sway, -h * 0.55, baseX + sway * 1.4, -h);
+        ctx.quadraticCurveTo(baseX + w * 0.3 + sway, -h * 0.55, baseX + w * 0.5, 0);
+        ctx.closePath();
+        ctx.fill();
+      }
+    }
+    ctx.restore();
+  }
+
+  function drawEmbers(t) {
+    ctx.save();
+    const count = 7;
+    for (let i = 0; i < count; i++) {
+      const seed = i * 12.9;
+      const life = (t * 0.35 + seed * 0.13) % 1;
+      const ex = Math.sin(seed + t * 1.4) * 7;
+      const ey = -6 - life * 34;
+      const alpha = (1 - life) * 0.85;
+      const size = lerp(1.6, 0.4, life);
+      ctx.fillStyle = `rgba(255, ${160 + Math.floor(60 * (1 - life))}, 70, ${alpha})`;
+      ctx.beginPath();
+      ctx.arc(ex, ey, size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function computeCampKidPos(t, omega, phase) {
+    const angle = t * omega + phase;
+    return {
+      x: camp.kidsCenter.x + Math.cos(angle) * camp.kidsRadius,
+      y: camp.kidsCenter.y + Math.sin(angle) * camp.kidsRadius * 0.42,
+      vx: -Math.sin(angle) * omega,
+    };
+  }
+
+  function drawCampKids(t) {
+    const palA = { skin: '#d9a97c', hair: '#4a3626', top: '#8c8452', bottom: '#6b5a3a' };
+    const palB = { skin: '#d9a97c', hair: '#6b3f28', top: '#5c6f9e', bottom: '#3c5670' };
+    const scaleKid = camp.scale * 0.62;
+
+    const a = computeCampKidPos(t, 1.7, 0.4);
+    const b = computeCampKidPos(t, 1.7, 0.4 + 2.5);
+
+    drawChild(a.x, a.y, scaleKid, a.vx >= 0 ? 1 : -1, t * 11, 1, t, palA, 0.85, false);
+    drawChild(b.x, b.y, scaleKid, b.vx >= 0 ? 1 : -1, t * 11 + 1.6, 1, t + 2, palB, 0.95, true);
+  }
+
   // --- scene state ------------------------------------------------------
 
   const CYCLE = 16; // seconds per full chase -> meet -> chase cycle
@@ -259,6 +640,7 @@
   function render(tSeconds) {
     ctx.clearRect(0, 0, W, H);
     ctx.drawImage(bg, 0, 0, W, H);
+    drawCampsiteDynamic(tSeconds);
 
     const mf = meetFactor(tSeconds);
 
@@ -294,7 +676,7 @@
 
     function drawOne(pos, t, isGirl) {
       const near = clamp((pos.y - yMin) / (yMax - yMin), 0, 1);
-      const scale = lerp(0.8, 1.25, near);
+      const scale = lerp(0.8, 1.25, near) * 1.5; // ~50% larger — read as the "parent" pair, clearly bigger than the campfire kids
       let facing = pos.vx >= 0 ? 1 : -1;
       const palette = isGirl
         ? { skin: '#d99a72', hair: '#7a4a2b', top: '#c1477a', bottom: '#b23a63' }
@@ -638,6 +1020,21 @@
     }, delay);
   }
 
+  // --- city time overlay --------------------------------------------------
+
+  const timeFormatter = {
+    krakow: new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Warsaw', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }),
+    london: new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/London', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }),
+  };
+
+  function updateCityTimes() {
+    const now = new Date();
+    const krakowEl = document.getElementById('time-krakow');
+    const londonEl = document.getElementById('time-london');
+    if (krakowEl) krakowEl.textContent = `Kraków ${timeFormatter.krakow.format(now)}`;
+    if (londonEl) londonEl.textContent = `London ${timeFormatter.london.format(now)}`;
+  }
+
   let raf = null;
   function loop(now) {
     render(now / 1000);
@@ -654,6 +1051,8 @@
       raf = requestAnimationFrame(loop);
     }
     scheduleNextSpeech(true);
+    updateCityTimes();
+    setInterval(updateCityTimes, 15000);
   }
 
   let resizeTimer = null;
