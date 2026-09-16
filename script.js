@@ -35,6 +35,7 @@
     DPR = Math.min(window.devicePixelRatio || 1, 2);
     W = window.innerWidth;
     H = window.innerHeight;
+    if (W === 0 || H === 0) return; // viewport not laid out yet; the next resize/frame retries
     canvas.width = W * DPR;
     canvas.height = H * DPR;
     canvas.style.width = W + 'px';
@@ -1013,8 +1014,15 @@
 
   let raf = null;
   function loop(now) {
-    render(now / 1000);
-    updateVisibleBubblePositions();
+    try {
+      if (W === 0 || H === 0) resize(); // retry until the viewport has real dimensions
+      if (bg.width > 0 && bg.height > 0) {
+        render(now / 1000);
+        updateVisibleBubblePositions();
+      }
+    } catch (err) {
+      console.error(err);
+    }
     raf = requestAnimationFrame(loop);
   }
 
