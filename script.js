@@ -60,7 +60,7 @@
   // facings all flip sign) so the internal composition reads the same way
   // reflected against the right edge instead of the left.
   function computeCampLayout() {
-    const s = clamp(W / 1300, 0.75, 1.5);
+    const s = clamp(W / 1300, 0.9, 2.0);
     const baseX = W * 0.86;
     const baseY = H * 0.80;
     camp.scale = s;
