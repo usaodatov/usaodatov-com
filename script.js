@@ -53,7 +53,7 @@
     paintBackground();
   }
 
-  // Right-side campsite vignette: tent, fire pit, chairs, play area — all
+  // Right-side campsite vignette: tent, fire pit, chairs — all
   // anchored off one base point whose ground line sits ~80% down the frame
   // (base of the cluster in the bottom 20% band). Mirrored left-right from
   // its original bottom-left layout (tent/fire/chair offsets and chair
@@ -70,8 +70,6 @@
     camp.fire = { x: baseX - 55 * s, y: baseY + 12 * s };
     camp.chairFather = { x: camp.fire.x + 42 * s, y: camp.fire.y + 2 * s, facing: -1 };
     camp.chairMother = { x: camp.fire.x - 42 * s, y: camp.fire.y + 2 * s, facing: 1 };
-    camp.kidsCenter = { x: baseX + 20 * s, y: baseY + 18 * s };
-    camp.kidsRadius = 18 * s;
   }
 
   function rand(a, b) { return a + Math.random() * (b - a); }
@@ -471,7 +469,6 @@
     drawChairOccupant(camp.chairFather, t, false);
     drawChairOccupant(camp.chairMother, t + 3.3, true);
     drawCampfireDynamic(camp.fire.x, camp.fire.y - 2 * camp.scale, camp.scale, t);
-    drawCampKids(t);
   }
 
   function drawCampAmbientGlow(t) {
@@ -593,27 +590,6 @@
       ctx.fill();
     }
     ctx.restore();
-  }
-
-  function computeCampKidPos(t, omega, phase) {
-    const angle = t * omega + phase;
-    return {
-      x: camp.kidsCenter.x + Math.cos(angle) * camp.kidsRadius,
-      y: camp.kidsCenter.y + Math.sin(angle) * camp.kidsRadius * 0.42,
-      vx: -Math.sin(angle) * omega,
-    };
-  }
-
-  function drawCampKids(t) {
-    const palA = { skin: '#d9a97c', hair: '#4a3626', top: '#8c8452', bottom: '#6b5a3a' };
-    const palB = { skin: '#d9a97c', hair: '#6b3f28', top: '#5c6f9e', bottom: '#3c5670' };
-    const scaleKid = camp.scale * 0.62;
-
-    const a = computeCampKidPos(t, 1.7, 0.4);
-    const b = computeCampKidPos(t, 1.7, 0.4 + 2.5);
-
-    drawChild(a.x, a.y, scaleKid, a.vx >= 0 ? 1 : -1, t * 11, 1, t, palA, 0.85, false);
-    drawChild(b.x, b.y, scaleKid, b.vx >= 0 ? 1 : -1, t * 11 + 1.6, 1, t + 2, palB, 0.95, true);
   }
 
   // --- scene state ------------------------------------------------------
