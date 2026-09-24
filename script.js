@@ -28,6 +28,7 @@
   const anchors = {
     maria: { x: 0, y: 0 },
     joshua: { x: 0, y: 0 },
+    owl: { x: 0, y: 0 },
   };
   let charDistance = Infinity;
 
@@ -650,6 +651,7 @@
 
     drawOne(girlPos, tSeconds, true);
     drawOne(boyPos, tSeconds, false);
+    drawOwl(tSeconds);
 
     function drawOne(pos, t, isGirl) {
       const near = clamp((pos.y - yMin) / (yMax - yMin), 0, 1);
@@ -674,6 +676,187 @@
         palette, tall, isGirl
       );
     }
+  }
+
+  // --- owl ----------------------------------------------------------------
+  // A white owl now and then flies in from a random corner, circles high above
+  // the children, and leaves through another corner. Flight is parametrised in
+  // a pseudo-3D space: z (0 far .. 1 near) drives both its on-screen size and
+  // its height on screen, so it grows/shrinks as it swings toward and away
+  // from the viewer.
+
+  const OWL_LINES = ['Hoo hoo!', 'Whooo?', 'Hoot, hoot!', 'Hoo-hoo-hooo!', 'Whoo-whoo!', 'Twit-twoo!', 'Hooo!', 'Hoo, hoo, hooo!', 'Screee!'];
+  const owl = { active: false, t0: null };
+
+  function spawnOwl() {
+    if (owl.active) return;
+    const corner = () => ({
+      x: Math.random() < 0.5 ? -0.14 : 1.14,
+      y: Math.random() < 0.5 ? -0.12 : 1.1,
+      z: rand(0.15, 1),
+    });
+    const entry = corner();
+    let exit = corner();
+    if (exit.x === entry.x && exit.y === entry.y) exit = { ...exit, x: 1 - exit.x };
+    Object.assign(owl, {
+      active: true,
+      t0: null,
+      dur: rand(15, 19),
+      entry,
+      exit,
+      a0: entry.x < 0.5 ? Math.PI : 0,
+      dir: Math.random() < 0.5 ? 1 : -1,
+      loops: rand(1.2, 1.6),
+      phase: 0,
+      lastT: 0,
+      facing: entry.x < 0.5 ? 1 : -1,
+      prevX: null,
+      nextHoot: 0,
+    });
+  }
+
+  function owlOrbitPoint(a) {
+    const z = 0.5 + 0.5 * Math.sin(a);
+    return { x: W * 0.5 + Math.cos(a) * W * 0.24, y: H * 0.30 + (z - 0.5) * H * 0.16, z };
+  }
+
+  function drawOwl(t) {
+    if (!owl.active) return;
+    if (owl.t0 === null) {
+      owl.t0 = t;
+      owl.lastT = t;
+      owl.nextHoot = t + rand(1.2, 2.2);
+    }
+    const u = (t - owl.t0) / owl.dur;
+    if (u >= 1) {
+      owl.active = false;
+      hideSpeechBubble('owl');
+      return;
+    }
+    const dt = Math.min(0.1, t - owl.lastT);
+    owl.lastT = t;
+
+    const E1 = 0.26, E2 = 0.76;
+    const toPx = (p) => ({ x: p.x * W, y: p.y * H, z: p.z });
+    const mix = (p, q, k) => ({ x: lerp(p.x, q.x, k), y: lerp(p.y, q.y, k), z: lerp(p.z, q.z, k) });
+    let pos;
+    if (u < E1) {
+      const k = u / E1;
+      pos = mix(toPx(owl.entry), owlOrbitPoint(owl.a0), 0.5 * k + 0.5 * k * (2 - k));
+    } else if (u < E2) {
+      const k = (u - E1) / (E2 - E1);
+      pos = owlOrbitPoint(owl.a0 + owl.dir * Math.PI * 2 * owl.loops * k);
+    } else {
+      const k = (u - E2) / (1 - E2);
+      const a1 = owl.a0 + owl.dir * Math.PI * 2 * owl.loops;
+      pos = mix(owlOrbitPoint(a1), toPx(owl.exit), 0.5 * k + 0.5 * k * k);
+    }
+
+    const s = clamp(W / 1300, 0.8, 1.8) * lerp(0.42, 1.9, pos.z);
+    const flutter = Math.sin(t * 2.3) * 4 * s;
+    const x = pos.x, y = pos.y + flutter;
+
+    owl.phase += dt * (u < E1 || u > E2 ? 11 : 7.5);
+    if (owl.prevX !== null && Math.abs(x - owl.prevX) > 0.05) {
+      const target = x > owl.prevX ? 1 : -1;
+      owl.facing += (target - owl.facing) * Math.min(1, dt * 6);
+    }
+    owl.prevX = x;
+
+    drawOwlSprite(x, y, s, owl.facing, owl.phase);
+
+    anchors.owl.x = x;
+    anchors.owl.y = y - 40 * s;
+    const onScreen = x > 60 && x < W - 60 && y > 90 && y < H - 30;
+    const b = bubbles.owl;
+    if (b && b.visible && !onScreen) hideSpeechBubble('owl');
+    if (b && onScreen && !b.visible && t >= owl.nextHoot) {
+      showSpeechBubble('owl', OWL_LINES[Math.floor(Math.random() * OWL_LINES.length)]);
+      owl.nextHoot = t + rand(3, 4.6);
+    }
+  }
+
+  function drawOwlSprite(x, y, s, facing, phase) {
+    const flap = Math.sin(phase);
+    ctx.save();
+    ctx.translate(x, y + Math.sin(phase - 0.6) * 1.5 * s);
+    ctx.scale(s * (Math.abs(facing) < 0.12 ? 0.12 * Math.sign(facing || 1) : facing), s);
+
+    const glow = ctx.createRadialGradient(0, 0, 4, 0, 0, 48);
+    glow.addColorStop(0, 'rgba(235, 240, 255, 0.22)');
+    glow.addColorStop(1, 'rgba(235, 240, 255, 0)');
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(0, 0, 48, 0, Math.PI * 2);
+    ctx.fill();
+
+    const wing = (fill, offsetX, lag) => {
+      const f = Math.sin(phase - lag);
+      ctx.save();
+      ctx.translate(offsetX, -3);
+      ctx.rotate(lerp(2.6, -0.35, (f + 1) / 2));
+      ctx.fillStyle = fill;
+      ctx.strokeStyle = 'rgba(120, 130, 165, 0.55)';
+      ctx.lineWidth = 0.9;
+      ctx.beginPath();
+      ctx.moveTo(-7, 0);
+      ctx.quadraticCurveTo(-22, -14, -15, -36);
+      ctx.quadraticCurveTo(-9, -30, -6, -34);
+      ctx.quadraticCurveTo(-1, -26, 3, -28);
+      ctx.quadraticCurveTo(8, -14, 6, 0);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(-4, -4); ctx.lineTo(-9, -26);
+      ctx.moveTo(0, -4); ctx.lineTo(-2, -24);
+      ctx.stroke();
+      ctx.restore();
+    };
+
+    wing('#cdd2e6', -2, 0.25); // far wing
+
+    // tail fan
+    ctx.fillStyle = '#e9e8ef';
+    ctx.beginPath();
+    ctx.moveTo(-12, -3); ctx.lineTo(-31, -7); ctx.lineTo(-32, 0); ctx.lineTo(-30, 7); ctx.lineTo(-12, 4);
+    ctx.closePath();
+    ctx.fill();
+
+    // body
+    ctx.fillStyle = '#f6f3ea';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 15, 10, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(120, 105, 90, 0.35)';
+    for (const [dx, dy] of [[-6, -3], [-1, 2], [4, -2], [-9, 3], [2, 5]]) {
+      ctx.beginPath();
+      ctx.ellipse(dx, dy, 1.6, 1, 0.3, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // head
+    ctx.fillStyle = '#fbf9f3';
+    ctx.beginPath();
+    ctx.arc(14, -5, 8.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#f1c232';
+    ctx.beginPath();
+    ctx.arc(17.5, -6, 3.6, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#16161d';
+    ctx.beginPath();
+    ctx.arc(18, -6, 2.3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#d9a441';
+    ctx.beginPath();
+    ctx.moveTo(21.5, -4); ctx.lineTo(26, -2.5); ctx.lineTo(21.5, -1);
+    ctx.closePath();
+    ctx.fill();
+
+    wing('#ffffff', 0, 0); // near wing
+
+    ctx.restore();
   }
 
   // --- speech bubbles ---------------------------------------------------
@@ -916,6 +1099,7 @@
   function initBubbles() {
     bubbles.joshua = createBubble();
     bubbles.maria = createBubble();
+    bubbles.owl = createBubble();
   }
 
   function positionBubble(who) {
@@ -942,6 +1126,7 @@
   function updateVisibleBubblePositions() {
     if (bubbles.joshua && bubbles.joshua.visible) positionBubble('joshua');
     if (bubbles.maria && bubbles.maria.visible) positionBubble('maria');
+    if (bubbles.owl && bubbles.owl.visible) positionBubble('owl');
   }
 
   function hideSpeechBubble(who) {
@@ -997,6 +1182,13 @@
     }, delay);
   }
 
+  function scheduleOwl(isFirst) {
+    setTimeout(() => {
+      spawnOwl();
+      scheduleOwl(false);
+    }, isFirst ? rand(9000, 16000) : rand(25000, 55000));
+  }
+
   // --- city time overlay --------------------------------------------------
 
   const timeFormatter = {
@@ -1035,6 +1227,7 @@
       raf = requestAnimationFrame(loop);
     }
     scheduleNextSpeech(true);
+    if (!reduceMotion) scheduleOwl(true);
     updateCityTimes();
     setInterval(updateCityTimes, 15000);
   }
