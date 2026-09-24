@@ -688,6 +688,33 @@
   const OWL_LINES = ['Hoo hoo!', 'Whooo?', 'Hoot, hoot!', 'Hoo-hoo-hooo!', 'Whoo-whoo!', 'Twit-twoo!', 'Hooo!', 'Hoo, hoo, hooo!', 'Screee!'];
   const owl = { active: false, t0: null };
 
+  // What the kids say while the owl is overhead (Hogwarts-flavoured, childish).
+  const OWL_KID_LINES = {
+    joshua: [
+      'Maria, look, an owl!', 'Look up, Maria! An owl!', 'Is it Hedwig?!', "Maria, that's a Hogwarts owl!",
+      'Did it bring my letter?!', 'I want an owl too!', 'Maria, look, look, look!', "Whoa, it's so white!",
+      'Maybe it has a letter for me!', 'Owl post! Owl post!', 'Can we keep it, Maria?', "It's flying so high!",
+      "Maria, I'm a wizard now!", 'Wingardium... flyosa!', "It's looking at me, Maria!", 'Hoo hoo! Hi, owl!',
+      'Maria, is it magic?', "It's circling us, Maria!", 'Maria, my letter is coming!', 'Ten points for the owl!',
+    ],
+    maria: [
+      'Look, Joshua, an owl!', 'Joshua, look up there!', "Joshua, maybe it's our Hogwarts letter!",
+      "Shh, Joshua, don't scare it!", "Wow, it's so beautiful!", 'Maybe it is delivering a letter!',
+      "Joshua, it's circling us!", 'Ten points to the owl!', 'Say hi to it, Joshua!', "Joshua, it's magic!",
+      'Look at its big eyes, Joshua!', "It's a snowy owl, Joshua!", 'Joshua, it can see everything!',
+      "Don't wave, you'll frighten it!", 'Owl post for Joshua!', "Joshua, it's flying so gracefully!",
+      'Hoo hoo! Hello, owl!', 'Joshua, is it a wizard owl?', 'Maybe it lives in a castle!', "Joshua, look, it's hooting!",
+    ],
+  };
+
+  function kidsReactToOwl(replyToo) {
+    const first = Math.random() < 0.5 ? 'joshua' : 'maria';
+    const second = first === 'joshua' ? 'maria' : 'joshua';
+    const pick = (who) => OWL_KID_LINES[who][Math.floor(Math.random() * OWL_KID_LINES[who].length)];
+    showSpeechBubble(first, pick(first));
+    if (replyToo) setTimeout(() => showSpeechBubble(second, pick(second)), 1700);
+  }
+
   function spawnOwl() {
     if (owl.active) return;
     const corner = () => ({
@@ -712,6 +739,7 @@
       facing: entry.x < 0.5 ? 1 : -1,
       prevX: null,
       nextHoot: 0,
+      nextReact: null,
     });
   }
 
@@ -770,6 +798,11 @@
     const onScreen = x > 60 && x < W - 60 && y > 90 && y < H - 30;
     const b = bubbles.owl;
     if (b && b.visible && !onScreen) hideSpeechBubble('owl');
+    if (onScreen && owl.nextReact === null) owl.nextReact = t + 0.6;
+    if (owl.nextReact !== null && onScreen && t >= owl.nextReact) {
+      kidsReactToOwl(true);
+      owl.nextReact = t + rand(4.5, 6.5);
+    }
     if (b && onScreen && !b.visible && t >= owl.nextHoot) {
       showSpeechBubble('owl', OWL_LINES[Math.floor(Math.random() * OWL_LINES.length)]);
       owl.nextHoot = t + rand(3, 4.6);
@@ -1165,7 +1198,7 @@
   }
 
   function speakOnce() {
-    if (conversationActive) return;
+    if (conversationActive || owl.active) return; // while the owl is around, the kids talk about it instead
     if (Math.random() < 0.14) {
       triggerPairedDialogue(pairedDialogues[Math.floor(Math.random() * pairedDialogues.length)]);
       return;
