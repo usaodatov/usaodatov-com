@@ -1057,7 +1057,7 @@
     const y = e.clientY - rect.top;
     const moonX = W * 0.78, moonY = horizonY * 0.32, moonR = W * 0.02;
     if (Math.hypot(x - moonX, y - moonY) <= moonR * 1.6) {
-      window.location.href = 'https://quickconnect.to/usaodaotov-nas';
+      window.location.href = 'https://quickconnect.to/usaodatov-nas';
     }
   });
 
