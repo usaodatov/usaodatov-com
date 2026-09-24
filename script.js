@@ -1049,5 +1049,17 @@
     }, 150);
   });
 
+  // Hidden moon link — no visual affordance, matches the moon's drawn
+  // position/radius from paintBackground() with a slightly generous hit area.
+  canvas.addEventListener('click', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const moonX = W * 0.78, moonY = horizonY * 0.32, moonR = W * 0.02;
+    if (Math.hypot(x - moonX, y - moonY) <= moonR * 1.6) {
+      window.location.href = 'https://quickconnect.to/usaodatov_nas';
+    }
+  });
+
   start();
 })();
