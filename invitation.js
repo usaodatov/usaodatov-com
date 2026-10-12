@@ -43,7 +43,12 @@
       <p class="j-details"><strong>PizzaExpress</strong></p>
       <p class="j-address">Bridge House<br>4 Borough High Street<br>London SE1 9QQ</p>
       <a class="j-map" target="_blank" rel="noopener noreferrer" href="https://www.google.com/maps/search/?api=1&amp;query=PizzaExpress%20Bridge%20House%204%20Borough%20High%20Street%20London%20SE1%209QQ">Find the pizza party ↗</a>
-      <p class="j-allergy">Please let Joshua's parents know about any allergies or dietary requirements.</p>
+      <div class="j-rsvp">
+        <p class="j-detail-label">Kindly RSVP to</p>
+        <p class="j-rsvp-name">Magdalena</p>
+        <a class="j-rsvp-phone" href="tel:+447429337638" aria-label="Call or text Magdalena on 07429 337638">07429 337638</a>
+      </div>
+      <p class="j-allergy">Please let Magdalena know about any allergies or dietary requirements.</p>
       <div class="j-stars" aria-hidden="true">✦ ✧ ✦</div>
     </article>`;
   document.body.append(trigger, pinDialog, inviteDialog);
