@@ -4,7 +4,7 @@
   trigger.type = 'button';
   trigger.className = 'j-invite-trigger';
   trigger.setAttribute('aria-label', "Open Joshua's birthday invitation");
-  trigger.innerHTML = '<span class="j-envelope" aria-hidden="true"><span class="j-envelope-flap"></span><span class="j-seal">J</span></span><span class="j-whisper">Psst… Joshua has something for you!</span>';
+  trigger.innerHTML = '<span class="j-envelope" aria-hidden="true"><span class="j-envelope-flap"></span><span class="j-seal">J</span></span><span class="j-whisper">Psst… click for Joshua’s invitation!</span>';
   const pinDialog = document.createElement('dialog');
   pinDialog.className = 'j-invite-dialog';
   pinDialog.setAttribute('aria-labelledby', 'j-pin-title');
