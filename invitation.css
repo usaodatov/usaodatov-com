@@ -306,3 +306,26 @@
   .j-invite-trigger .j-envelope::after,
   .j-invite-trigger .j-seal { animation: none; }
 }
+
+/* Joshua RSVP contact inside the invitation card */
+.j-rsvp {
+  margin: 21px auto 0;
+  padding: 16px 10px 8px;
+  border-top: 1px solid rgba(180, 143, 88, .45);
+  text-align: center;
+}
+.j-rsvp-name {
+  margin: 4px auto 2px !important;
+  font: 600 27px/1.1 "Cormorant Garamond", Georgia, serif;
+  color: #644323;
+}
+.j-rsvp-phone {
+  display: inline-block;
+  padding: 5px 6px;
+  font: 600 20px/1.2 "Cormorant Garamond", Georgia, serif;
+  color: #875d29;
+  text-decoration: underline;
+  text-decoration-color: rgba(171, 125, 61, .55);
+  text-underline-offset: 3px;
+}
+.j-rsvp-phone:focus-visible { outline: 3px solid #996820; outline-offset: 3px; }
