@@ -69,7 +69,7 @@
     }
   });
   pinInput.addEventListener('input', () => {
-    pinInput.value = pinInput.value.replace(/\\D/g, '').slice(0, 4);
+    pinInput.value = pinInput.value.replace(/\D/g, '').slice(0, 4);
     error.hidden = true;
   });
   [pinDialog, inviteDialog].forEach((dialog) => {
