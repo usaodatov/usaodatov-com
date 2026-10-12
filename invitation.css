@@ -1,0 +1,220 @@
+/* Joshua's invitation: self-contained overlay. Existing meadow styles stay untouched. */
+.j-invite-trigger {
+  position: fixed;
+  z-index: 32;
+  right: clamp(16px, 5vw, 96px);
+  bottom: clamp(200px, 36vh, 360px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 11px;
+  width: clamp(142px, 13vw, 206px);
+  padding: 12px 4px;
+  border: 0;
+  background: transparent;
+  color: #fff5db;
+  cursor: pointer;
+  font: 600 clamp(14px, 1.25vw, 19px)/1.1 "Caveat", cursive;
+  text-align: center;
+  text-shadow: 0 2px 9px #172039, 0 0 14px #172039;
+}
+.j-invite-trigger:focus-visible { outline: 3px solid #f5d993; outline-offset: 4px; border-radius: 12px; }
+.j-invite-trigger .j-envelope {
+  position: relative;
+  isolation: isolate;
+  display: block;
+  width: 136px;
+  height: 89px;
+  background: linear-gradient(142deg, #fffdf2 5%, #f0dec1 66%, #e1c99f 100%);
+  border: 1px solid #d8b981;
+  border-radius: 5px;
+  box-shadow: 0 10px 22px #09151d73, inset 0 0 0 3px #fffaf080;
+  transform: rotate(-7deg);
+  transition: transform 350ms ease, filter 350ms ease;
+}
+.j-invite-trigger:hover .j-envelope,
+.j-invite-trigger:focus-visible .j-envelope { transform: rotate(-2deg) translateY(-8px); filter: brightness(1.09); }
+.j-envelope::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(27deg, transparent 49.5%, #ddbf8f 50%, transparent 51%) left bottom/50% 80% no-repeat,
+              linear-gradient(-27deg, transparent 49.5%, #ddbf8f 50%, transparent 51%) right bottom/50% 80% no-repeat;
+  pointer-events: none;
+}
+.j-envelope-flap {
+  position: absolute;
+  z-index: 2;
+  inset: -1px -1px auto;
+  height: 62px;
+  background: linear-gradient(#fff9e7, #ead2aa);
+  clip-path: polygon(0 0, 100% 0, 50% 94%);
+  filter: drop-shadow(0 2px 1px #be9c70);
+  transform-origin: 50% 0;
+  transition: transform 450ms ease;
+}
+.j-invite-trigger.is-opened .j-envelope-flap { transform: rotateX(175deg); }
+.j-seal {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  top: 35px;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #fff5c180;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #e5c580, #9e7134 80%);
+  box-shadow: 0 2px 5px #60451e73, inset 0 0 0 3px #c79e5c;
+  color: #fff5d7;
+  font: italic 600 23px/1 "Cormorant Garamond", Georgia, serif;
+  transform: translateX(-50%);
+  transition: opacity 150ms ease;
+}
+.j-invite-trigger.is-opened .j-seal { opacity: 0; }
+.j-invite-trigger .j-whisper { display: block; max-width: 185px; letter-spacing: 0.02em; }
+.j-invite-dialog {
+  position: fixed;
+  inset: 0;
+  box-sizing: border-box;
+  margin: auto;
+  width: min(92vw, 440px);
+  max-height: min(90dvh, 750px);
+  padding: 0;
+  border: 0;
+  border-radius: 3px;
+  background: #fffaf0;
+  color: #453623;
+  overflow-y: auto;
+  box-shadow: 0 25px 100px #090b16b3, 0 0 0 1px #d2b276;
+}
+.j-invite-dialog::backdrop {
+  background: #070e1cbf;
+  backdrop-filter: blur(5px);
+}
+.j-invite-dialog[open] { animation: j-card-appear 500ms cubic-bezier(.16,1,.3,1) both; }
+@keyframes j-card-appear {
+  from { transform: translateY(22px) scale(.93); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
+}
+.j-panel {
+  position: relative;
+  isolation: isolate;
+  min-height: 300px;
+  padding: 44px clamp(25px, 6vw, 53px) 38px;
+  text-align: center;
+  background: radial-gradient(ellipse at 50% 0, #fffefa, #fff7e6 80%);
+  box-shadow: inset 0 0 0 9px #fffcf4, inset 0 0 0 10px #bf9e63a8,
+              inset 0 0 0 16px #fff9ec, inset 0 0 0 17px #d6b7828c;
+}
+.j-close {
+  position: absolute;
+  z-index: 5;
+  top: 13px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  border: 1px solid #c6a66e;
+  border-radius: 50%;
+  background: #fffaef;
+  color: #725735;
+  cursor: pointer;
+  font: 25px/25px Georgia, serif;
+}
+.j-close:focus-visible, .j-unlock:focus-visible, .j-map:focus-visible, .j-pin:focus-visible { outline: 3px solid #996820; outline-offset: 3px; }
+.j-eyebrow {
+  margin: 0 0 12px;
+  color: #966d39;
+  font: 600 11px/1.5 Arial, sans-serif;
+  letter-spacing: .23em;
+  text-transform: uppercase;
+}
+.j-panel h2 {
+  margin: 0 auto 12px;
+  font: 500 clamp(36px, 9vw, 52px)/.98 "Cormorant Garamond", Georgia, serif;
+  color: #604124;
+}
+.j-panel p { margin: 0 auto 14px; }
+.j-pin-copy { max-width: 290px; font: 22px/1.2 "Cormorant Garamond", Georgia, serif; }
+.j-pin {
+  width: min(100%, 208px);
+  margin: 12px auto 18px;
+  padding: 12px;
+  display: block;
+  border: 1px solid #bb965b;
+  border-radius: 5px;
+  background: #fffdf7;
+  color: #5e4022;
+  text-align: center;
+  font: 600 27px/1.2 Arial, sans-serif;
+  letter-spacing: .55em;
+  text-indent: .55em;
+}
+.j-error { min-height: 20px; color: #9b352e; font: 14px/1.4 Arial, sans-serif; }
+.j-error[hidden] { display: block; visibility: hidden; }
+.j-unlock {
+  margin: 10px auto 0;
+  padding: 13px 25px;
+  border: 1px solid #8b683b;
+  border-radius: 30px;
+  background: linear-gradient(#c3a168, #a47b40);
+  box-shadow: inset 0 1px #f3daaa80;
+  color: #fffef9;
+  cursor: pointer;
+  font: 600 13px/1.3 Arial, sans-serif;
+  letter-spacing: .06em;
+}
+.j-corner {
+  position: absolute;
+  z-index: -1;
+  width: 75px;
+  height: 75px;
+  pointer-events: none;
+  opacity: .8;
+  background:
+    radial-gradient(circle at 33px 33px, transparent 19px, #b89052 20px, transparent 21.5px),
+    radial-gradient(circle at 19px 19px, #ba9459 2px, transparent 3.5px),
+    radial-gradient(circle at 40px 15px, #ba9459 2px, transparent 3.5px),
+    radial-gradient(circle at 15px 40px, #ba9459 2px, transparent 3.5px);
+  border-top: 2px solid #b89052;
+  border-left: 2px solid #b89052;
+  border-radius: 21px 0 0 0;
+}
+.j-corner.tl { top: 18px; left: 18px; }
+.j-corner.tr { top: 18px; right: 18px; transform: rotate(90deg); }
+.j-corner.br { bottom: 18px; right: 18px; transform: rotate(180deg); }
+.j-corner.bl { bottom: 18px; left: 18px; transform: rotate(270deg); }
+.j-stars { color: #b4935c; font: 20px/1 Georgia, serif; letter-spacing: .35em; margin: 13px 0; }
+.j-card-lead { font: italic 23px/1.3 "Cormorant Garamond", Georgia, serif; color: #775e40; }
+.j-party-name { font: 600 clamp(41px, 9vw, 56px)/.95 "Cormorant Garamond", Georgia, serif; color: #8f3e2f; }
+.j-card-body { font: 22px/1.2 "Cormorant Garamond", Georgia, serif; color: #533c28; }
+.j-divider { height: 1px; width: 58%; margin: 23px auto; background: linear-gradient(to right, transparent, #bd9e68, transparent); }
+.j-detail-label { color: #977344; font: 600 10px/1.5 Arial, sans-serif; letter-spacing: .2em; text-transform: uppercase; }
+.j-details { margin: 5px auto 18px; font: 25px/1.1 "Cormorant Garamond", Georgia, serif; }
+.j-details strong { font-weight: 600; }
+.j-address { margin: 4px auto 14px; font: 20px/1.25 "Cormorant Garamond", Georgia, serif; }
+.j-map { display: inline-block; color: #795a2c; text-underline-offset: 3px; font: 13px/1.5 Arial, sans-serif; }
+.j-allergy { margin-top: 23px !important; max-width: 290px; color: #887660; font: 12px/1.6 Arial, sans-serif; }
+@media (max-width: 640px) {
+  .j-invite-trigger {
+    right: 8px;
+    bottom: 23vh;
+    width: 150px;
+  }
+  .j-invite-trigger .j-envelope { transform: rotate(-7deg) scale(.88); }
+  .j-invite-trigger:hover .j-envelope,
+  .j-invite-trigger:focus-visible .j-envelope { transform: rotate(-2deg) translateY(-5px) scale(.88); }
+  .j-panel { padding: 43px 23px 32px; }
+  .j-corner { width: 55px; height: 55px; }
+  .j-details { font-size: 23px; }
+}
+@media (max-height: 530px) {
+  .j-invite-trigger { bottom: 11vh; }
+  .j-panel { padding-top: 35px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .j-invite-dialog[open] { animation: none; }
+  .j-envelope, .j-envelope-flap, .j-seal { transition: none !important; }
+}
